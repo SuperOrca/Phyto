@@ -6,8 +6,8 @@ A discord.py bot for all your needs.
 
 [![](https://img.shields.io/github/v/release/SuperOrca/phyto?style=for-the-badge)](https://github.com/SuperOrca/phyto/releases/)
 [![](https://img.shields.io/github/license/SuperOrca/phyto?style=for-the-badge)](LICENSE)
-[![](https://img.shields.io/discord/1009938825717497988?color=5865F2&label=support&style=for-the-badge)](https://discord.gg/bAnZPMerS2)
-[![](https://shields.io/badge/-bot-informational?logo=discord&style=for-the-badge&color=5865F2&logoColor=white)](https://discord.com/oauth2/authorize?client_id=1009829774987907112&scope=applications.commands+bot&guild_id=0&response_type=code&redirect_uri=https://superorca.github.io/phyto&permissions=2134207679)
+[![](https://img.shields.io/discord/1015815885769949324?color=5865F2&label=support&style=for-the-badge)](https://discord.gg/3p2rRDb7zS)
+[![](https://shields.io/badge/-bot-informational?logo=discord&style=for-the-badge&color=5865F2&logoColor=white)]()
 
 ## Contributing
 
