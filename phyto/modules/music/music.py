@@ -44,7 +44,7 @@ class Music(commands.Cog):
 
         player = self.players[ctx.guild.id]
 
-        if not ctx.author.voice or not ctx.author.voice.channel == player.channel:
+        if not ctx.author.voice or ctx.author.voice.channel != player.channel:
             raise Error("You are not in the same channel as the bot.")
 
         return player
@@ -189,7 +189,7 @@ class Music(commands.Cog):
     @commands.cooldown(1, 2, commands.BucketType.user)
     async def _remove(self, ctx: Context, index: int) -> None:
         player = await self.get_player(ctx)
-        index = index - 1
+        index -= 1
 
         try:
             track = player.queue[index]

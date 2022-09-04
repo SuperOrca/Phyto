@@ -61,13 +61,10 @@ class Player(wavelink.Player):
         if not self.shuffle:
             track = self.queue[0]
             del self.queue[0]
-            if self.loop:
-                self.queue.append(track)
         else:
             index = randrange(len(self.queue))
             track = self.queue[index]
             del self.queue[index]
-            if self.loop:
-                self.queue.append(track)
-
+        if self.loop:
+            self.queue.append(track)
         return track

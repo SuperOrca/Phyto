@@ -39,8 +39,9 @@ class Events(commands.Cog):
         else:
             await ctx.reply(
                 embed=Embed.error(
-                    description=f"An unknown error has occured. The developers have been alerted."
+                    description="An unknown error has occured. The developers have been alerted."
                 ),
                 can_delete=True,
             )
+
             self.bot.logger.error(error)
