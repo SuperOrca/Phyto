@@ -35,6 +35,7 @@ class Music(commands.Cog):
                 host=node["host"],
                 port=node["port"],
                 password=node["password"],
+                https=True,
             )
 
     async def get_player(self, ctx: Context) -> Player:

@@ -8,7 +8,7 @@ from typing_extensions import Self
 
 # https://discord.com/branding
 class EmbedColor(Enum):
-    DEFAULT = discord.Color.from_rgb(88, 101, 242)
+    DEFAULT = discord.Color.from_rgb(9, 166, 246)
     SUCCESS = discord.Color.from_rgb(87, 242, 135)
     WARNING = discord.Color.from_rgb(254, 231, 92)
     ERROR = discord.Color.from_rgb(237, 66, 69)

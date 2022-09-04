@@ -8,9 +8,11 @@ import coloredlogs
 import discord
 import jishaku
 import mystbin
+from databases import Database
 from discord import Message
 from discord.ext import commands
 
+from .cache import Cache
 from .config import CONFIG
 from .context import Context
 from .logging import SetupLogging
@@ -19,7 +21,7 @@ from .logging import SetupLogging
 class Phyto(commands.AutoShardedBot):
     @staticmethod
     async def _get_prefix(self, message: discord.Message) -> List[str]:
-        return commands.when_mentioned_or(CONFIG["phyto"]["prefix"])(self, message)
+        return commands.when_mentioned_or(CONFIG["prefix"])(self, message)
 
     def __init__(self) -> None:
         super().__init__(
@@ -29,9 +31,9 @@ class Phyto(commands.AutoShardedBot):
             activity=discord.Activity(type=discord.ActivityType.watching, name="/help"),
             owner_ids=CONFIG["owner"]["ids"],
             strip_after_prefix=True,
-            description=CONFIG["phyto"]["description"],
+            description=CONFIG["description"],
         )
-        self.__version__ = CONFIG["phyto"]["version"]
+        self.__version__ = CONFIG["version"]
         self.mentions = lambda message: (
             mention.strip() for mention in commands.when_mentioned(self, message)
         )
@@ -44,7 +46,7 @@ class Phyto(commands.AutoShardedBot):
     async def load(self) -> None:
         self.session = aiohttp.ClientSession(
             headers={
-                "User-Agent": f"Phyto v{self.__version__} ({CONFIG['phyto']['website']}) Python/{sys.version_info[0]}.{sys.version_info[1]} aiohttp/{aiohttp.__version__}"
+                "User-Agent": f"Phyto v{self.__version__} ({CONFIG['website']}) Python/{sys.version_info[0]}.{sys.version_info[1]} aiohttp/{aiohttp.__version__}"
             },
             timeout=aiohttp.ClientTimeout(total=30),
             loop=self.loop,
@@ -62,13 +64,13 @@ class Phyto(commands.AutoShardedBot):
         jishaku.Flags.NO_DM_TRACEBACK = True
 
     async def start(self) -> None:
-        await super().start(CONFIG["phyto"]["token"], reconnect=True)
+        self.cache = Cache(Database(CONFIG["database"]["url"]))
+        await self.cache.load()
+        await super().start(CONFIG["token"], reconnect=True)
 
     async def setup_hook(self) -> None:
         self.logger.info("Running setup...")
         await self.load()
-
-        self.logger.info(f"Database loaded")
 
         if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
@@ -105,5 +107,6 @@ class Phyto(commands.AutoShardedBot):
             await self.process_commands(after)
 
     async def close(self) -> None:
+        await self.cache.unload()
         await self.session.close()
         await super().close()

@@ -51,7 +51,7 @@ class Misc(commands.Cog):
         await ctx.reply(
             embed=Embed.default(
                 description=f"""
-{CONFIG['phyto']['description']}
+{CONFIG['description']}
 
 ➤ ID: `{self.bot.user.id}`
 ➤ Created: {discord.utils.format_dt(self.bot.user.created_at, "R")}
@@ -80,7 +80,7 @@ class Misc(commands.Cog):
                 ui.Button(
                     style=ButtonStyle.link,
                     label="Website",
-                    url=CONFIG["phyto"]["website"],
+                    url=CONFIG["website"],
                 )
             ),
         )

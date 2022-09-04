@@ -29,7 +29,7 @@ class SetupLogging:
 
         self.logger.setLevel(logging.INFO)
         handler = RotatingFileHandler(
-            filename="logs/phyto.log",
+            filename="data/phyto.log",
             encoding="utf-8",
             mode="w",
             maxBytes=self.max_bytes,

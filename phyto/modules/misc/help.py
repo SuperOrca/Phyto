@@ -9,7 +9,9 @@ from phyto.core.helpers import chunks
 
 class HelpSelect(ui.Select):
     def __init__(self, ctx: Context, view: ui.View):
-        options = [discord.SelectOption(label="Home", emoji="🏠")]
+        options = [
+            discord.SelectOption(label="Phyto", emoji="<:phyto:1016014049974169671>")
+        ]
         for cog in ctx.bot.cogs.values():
             if hasattr(cog, "icon"):
                 options.append(
@@ -36,11 +38,11 @@ class HelpMenu(ui.View):
         self.update()
 
     def setup_options(self):
-        self.page = "Home"
+        self.page = "Phyto"
         self.page_embeds = {
-            "Home": [
+            "Phyto": [
                 Embed.default(
-                    title="🏠 Phyto Help",
+                    title="<:phyto:1016014049974169671> Phyto Help",
                     description=f"""
 ➤ Use `{self.ctx.clean_prefix}help <command>` for more information about a command.
 ➤ For more information about the bot use `{self.ctx.clean_prefix}bot`.
@@ -50,7 +52,11 @@ class HelpMenu(ui.View):
                 )
             ]
         }
-        options = [discord.SelectOption(label="Home", emoji="🏠", default=True)]
+        options = [
+            discord.SelectOption(
+                label="Phyto", emoji="<:phyto:1016014049974169671>", default=True
+            )
+        ]
         for cog in self.bot.cogs.values():
             if hasattr(cog, "icon"):
                 options.append(

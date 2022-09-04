@@ -153,6 +153,7 @@ class Utility(commands.Cog):
 ➤ ID: `{emoji.id}`
 ➤ Created: {discord.utils.format_dt(emoji.created_at, "R")}
 ➤ Animated? `{emoji.animated}`
+➤ Mention: `{emoji}`
 """
             )
             .set_author(name=emoji.name, icon_url=emoji.url)
