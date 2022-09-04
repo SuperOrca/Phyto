@@ -126,7 +126,7 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         await ctx.reply(embed=Embed.default(description="Song skipped."))
-        await player.next(self.players)
+        await player.next(self.players, force=True)
 
     @commands.hybrid_command(
         "queue", description="🎵 View the queue of the bot", aliases=["q"]
@@ -221,18 +221,23 @@ class Music(commands.Cog):
     async def _volume(self, ctx: Context, volume: int) -> None:
         player = await self.get_player(ctx)
 
-        if 1 > volume > 100:
+        if not 0 < volume <= 1000:
             raise Error(f"Volume `{volume}` cannot be less than 1 or greater than 100.")
 
         await player.set_volume(volume)
         await ctx.reply(embed=Embed.default(description=f"Volume set to `{volume}%`."))
 
-    # @commands.hybrid_command("seek", description="🎵 Seek to part of song in seconds")
-    # @commands.cooldown(1, 2, commands.BucketType.user)
-    # async def _seek(self, ctx: Context, position: int) -> None:
-    #     player = await self.get_player(ctx)
-    #
-    #     await player.seek(position)
+    @commands.hybrid_command("seek", description="🎵 Seek to part of song in seconds")
+    @commands.cooldown(1, 2, commands.BucketType.user)
+    async def _seek(self, ctx: Context, seconds: int) -> None:
+        player = await self.get_player(ctx)
+        track = player.track
+
+        if not 0 < seconds < track.duration:
+            raise Error(f"Position `{seconds}` is out of range.")
+
+        await player.seek(seconds * 1000)
+        await ctx.reply(embed=Embed.default(description=f"Sought to `{humanize.precisedelta(datetime.timedelta(seconds=seconds))}`."))
 
     @commands.hybrid_command("shuffle", description="🎵 Shuffles the queue of the bot")
     @commands.cooldown(1, 2, commands.BucketType.user)

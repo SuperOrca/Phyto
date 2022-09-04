@@ -17,10 +17,8 @@ class Player(wavelink.Player):
         self.shuffle = False
         self.skip = False
 
-    async def next(self, players: dict):
-        if self.skip:
-            return
-        elif len(self.channel.voice_states) < 2:
+    async def next(self, players: dict, force: bool = False):
+        if len(self.channel.voice_states) < 2:
             await self.disconnect()
             await self.source_channel.send(
                 embed=Embed.error(
@@ -29,7 +27,8 @@ class Player(wavelink.Player):
             )
             del players[self.guild.id]
         elif len(self.queue) < 1:
-            await self.stop()
+            if force:
+                await self.stop()
             wait = 0
             while True:
                 if not self.is_connected():
@@ -49,7 +48,6 @@ class Player(wavelink.Player):
                         break
                     await asyncio.sleep(1)
         else:
-            self.skip = True
             track = self.get_track()
 
             await self.play(track)
@@ -58,7 +56,6 @@ class Player(wavelink.Player):
                     description=f"Now playing [`{track.title}`]({track.uri})."
                 )
             )
-            self.skip = False
 
     def get_track(self) -> Track:
         if not self.shuffle:
