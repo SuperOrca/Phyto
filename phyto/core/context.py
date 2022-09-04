@@ -9,23 +9,20 @@ from .views import TrashView
 
 class Context(commands.Context):
     async def reply(self, content: Optional[str] = None, **kwargs) -> discord.Message:
-        if kwargs.pop("can_delete", False):
-            view = TrashView(self)
-            view.message = await super().reply(
-                content, **kwargs, mention_author=False, view=view
-            )
-            return view.message
-
-        else:
+        if not kwargs.pop("can_delete", False):
             return await super().reply(content, **kwargs, mention_author=False)
+        view = TrashView(self)
+        view.message = await super().reply(
+            content, **kwargs, mention_author=False, view=view
+        )
+        return view.message
 
     async def send(self, content: Optional[str] = None, **kwargs) -> discord.Message:
-        if kwargs.pop("can_delete", False):
-            view = TrashView(self)
-            view.message = await super().send(content, **kwargs, view=view)
-            return view.message
-        else:
+        if not kwargs.pop("can_delete", False):
             return await super().send(content, **kwargs)
+        view = TrashView(self)
+        view.message = await super().send(content, **kwargs, view=view)
+        return view.message
 
     async def tick(self, tick: bool = True) -> None:
         try:

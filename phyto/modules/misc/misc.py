@@ -107,33 +107,32 @@ class Misc(commands.Cog):
                         for aliase in cmd.aliases:
                             self.map[aliase] = cmd
             command = command.lower()
-            if command in self.map:
-                command = self.map[command]
-                aliases = (
-                    ", ".join(f"`{aliase}`" for aliase in command.aliases)
-                    if len(command.aliases) > 0
-                    else "`No aliases.`"
-                )
-                parts = command.description.split(" ")
-                module = command.cog.__cog_name__
-                icon = parts[0]
-                description = " ".join(parts[1:])
-                cooldown = command.cooldown.rate
+            if command not in self.map:
+                raise Error(f"Command `{command}` not found.")
+            command = self.map[command]
+            aliases = (
+                ", ".join(f"`{aliase}`" for aliase in command.aliases)
+                if len(command.aliases) > 0
+                else "`No aliases.`"
+            )
+            parts = command.description.split(" ")
+            module = command.cog.__cog_name__
+            icon = parts[0]
+            description = " ".join(parts[1:])
+            cooldown = command.cooldown.rate
 
-                await ctx.reply(
-                    embed=Embed.default(
-                        title=f"`{ctx.clean_prefix}{command.name}` {command.help or ''}",
-                        description=f"""
+            await ctx.reply(
+                embed=Embed.default(
+                    title=f"`{ctx.clean_prefix}{command.name}` {command.help or ''}",
+                    description=f"""
 {description}
 
 ➤ Module: {icon} `{module}`           
 ➤ Aliases: {aliases}
 ➤ Cooldown: `{cooldown} seconds`
 """,
-                    )
                 )
-            else:
-                raise Error(f"Command `{command}` not found.")
+            )
         else:
             await HelpMenu(
                 ctx,

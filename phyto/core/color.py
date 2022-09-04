@@ -20,10 +20,10 @@ class Color:
             if len(color) == 3:
                 color = f"{color[0] * 2}{color[1] * 2}{color[2] * 2}"
 
-            return cls((int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)))
+            return cls((int(color[:2], 16), int(color[2:4], 16), int(color[4:6], 16)))
 
         if match := re.match(RGB_REGEX, color):
-            color = match.group(0).split(",")
+            color = match[0].split(",")
             return cls((int(color[0]), int(color[1]), int(color[2])))
 
         return None
