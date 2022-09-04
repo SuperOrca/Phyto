@@ -1,0 +1,18 @@
+[phyto]
+version = ''
+token = ''
+prefix = ''
+invite = ''
+support = ''
+description = ''
+website = ''
+
+[owner]
+name = ''
+website = ''
+ids = []
+
+[[lavalink]]
+host = ''
+port = ''
+password = ''

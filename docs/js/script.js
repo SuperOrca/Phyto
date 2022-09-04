@@ -1,0 +1,1 @@
+if (window.location.search.includes("code") || window.location.search.includes("token")) window.history.replaceState(null, null, window.location.pathname);
