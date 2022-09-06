@@ -61,7 +61,6 @@ class Phyto(commands.AutoShardedBot):
             await self.load_extension("jishaku")
         jishaku.Flags.HIDE = True
         jishaku.Flags.NO_UNDERSCORE = True
-        jishaku.Flags.NO_DM_TRACEBACK = True
 
     async def start(self) -> None:
         self.cache = Cache(Database(CONFIG["database"]["url"]))
@@ -85,14 +84,12 @@ class Phyto(commands.AutoShardedBot):
         )
 
     async def on_message(self, message: discord.Message) -> Union[None, Message]:
-        if message.author.bot or not message.guild:
-            return
         if message.author.id in self.owner_ids and message.content.lower().startswith(
             "jsk"
         ):
             message.content = f"{self.user.mention} {message.content}"
-        if message.content in self.mentions(message):
-            return await message.reply(
+        elif message.content in self.mentions(message):
+            return await message.send(
                 f"The server prefix is `{(await self._get_prefix(self, message))[-1]}`."
             )
         await self.process_commands(message)

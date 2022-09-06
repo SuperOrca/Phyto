@@ -4,7 +4,7 @@ from typing import Optional
 
 import discord
 import humanize
-from discord import ButtonStyle, ui
+from discord import ButtonStyle, ui, app_commands
 from discord.ext import commands
 
 from phyto.core.bot import Phyto
@@ -30,7 +30,6 @@ class Misc(commands.Cog):
         description="⚙ Information about the bot",
         aliases=["uptime", "about", "source", "invite"],
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _bot(self, ctx: Context) -> None:
         icon = get_asset_url(self.bot.user.avatar)
         version_info = sys.version_info
@@ -48,7 +47,7 @@ class Misc(commands.Cog):
             ).replace(tzinfo=datetime.timezone.utc)
             changes += f"[`{commit['sha'][:6]}`]({commit['html_url']}) {commit['commit']['message']} ({discord.utils.format_dt(time, 'R')})\n "
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 {CONFIG['description']}
@@ -86,9 +85,8 @@ class Misc(commands.Cog):
         )
 
     @commands.hybrid_command("ping", description="⚙ Pings the bot")
-    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _ping(self, ctx: Context) -> None:
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"Pong! `{round(self.bot.latency * 1000)}ms`"
             )
@@ -98,7 +96,8 @@ class Misc(commands.Cog):
         "help", description="⚙ Shows the help menu", help="[command]"
     )
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _help(self, ctx: Context, command: Optional[str] = None) -> None:
+    @app_commands.describe(command="Name of command")  # TODO add autocomplete
+    async def _help(self, ctx: Context, *, command: Optional[str] = None) -> None:
         if command:
             if not self.map:
                 for cmd in self.bot.walk_commands():
@@ -121,7 +120,7 @@ class Misc(commands.Cog):
             description = " ".join(parts[1:])
             cooldown = command.cooldown.rate
 
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.default(
                     title=f"`{ctx.clean_prefix}{command.name}` {command.help or ''}",
                     description=f"""

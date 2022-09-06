@@ -7,6 +7,7 @@ P = ParamSpec("P")
 
 
 def in_executor(
+    *,
     loop: Optional[asyncio.AbstractEventLoop] = None,
 ) -> Callable[[Callable[P, T]], Callable[P, Awaitable[T]]]:
     def inner_function(func: Callable[P, T]) -> Callable[P, Awaitable[T]]:

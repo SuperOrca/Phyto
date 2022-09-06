@@ -4,7 +4,7 @@ from typing import Optional
 
 import discord
 from PIL import Image
-from discord import UserFlags, ui, ButtonStyle
+from discord import UserFlags, ui, ButtonStyle, app_commands
 from discord.ext import commands
 
 from phyto.core.bot import Phyto
@@ -38,16 +38,16 @@ class Utility(commands.Cog):
 
     def get_flags(self, member: discord.Member) -> str:
         all = member.public_flags.all()
-        if len(all) == 0:
+        if len(all) < 1:
             return "`No flags.`"
         return " ".join(str(self.bot.get_emoji(self.flags[flag])) for flag in all)
 
     @commands.hybrid_command(
         "user", description="⚒ Information about a user", help="[user]"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(member="Name of member")
     async def _user(
-        self, ctx: Context, member: Optional[discord.Member] = None
+        self, ctx: Context, *, member: Optional[discord.Member] = None
     ) -> None:
         member = member or ctx.author
 
@@ -65,7 +65,7 @@ class Utility(commands.Cog):
 
         permissions = get_permissions(ctx.channel.permissions_for(member))
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 ➤ ID: `{member.id}`
@@ -90,7 +90,6 @@ class Utility(commands.Cog):
         )
 
     @commands.hybrid_command("server", description="⚒ Information about the server")
-    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _server(self, ctx: Context) -> None:
         guild = ctx.guild
 
@@ -99,7 +98,7 @@ class Utility(commands.Cog):
         humans = members - len(list(filter(lambda member: member.bot, guild.members)))
         bots = members - humans
 
-        if len(guild.features) == 0:
+        if len(guild.features) < 1:
             features = "No features."
         else:
             features = "".join(
@@ -107,7 +106,7 @@ class Utility(commands.Cog):
                 for feature in guild.features
             )
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 {guild.description or "No description."}
@@ -145,9 +144,9 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         "emoji", description="⚒ Information about an emoji", help="<emoji>"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(emoji="Name of emoji")
     async def _emoji(self, ctx: Context, emoji: discord.Emoji) -> None:
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 ➤ ID: `{emoji.id}`
@@ -166,7 +165,7 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         "role", description="⚒ Information about a role", help="<role>"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(role="Name of role")
     async def _role(self, ctx: Context, role: discord.Role) -> None:
         with Image.new("RGB", (128, 128), role.color.to_rgb()) as image:
             buffer = BytesIO()
@@ -184,7 +183,7 @@ class Utility(commands.Cog):
         if role.display_icon is not None:
             icon = get_asset_url(role.display_icon)
             embed.set_thumbnail(url=icon)
-            await ctx.reply(
+            await ctx.send(
                 embed=embed,
                 view=ui.View().add_item(
                     ui.Button(style=ButtonStyle.link, label="Icon", url=icon)
@@ -192,12 +191,12 @@ class Utility(commands.Cog):
                 file=discord.File(buffer, "color.png"),
             )
         else:
-            await ctx.reply(embed=embed, file=discord.File(buffer, "color.png"))
+            await ctx.send(embed=embed, file=discord.File(buffer, "color.png"))
 
     @commands.hybrid_command(
         "pypi", description="⚒ Information about a PyPI package", help="<package>"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(package="Name of Pypi package")
     async def _pypi(self, ctx: Context, package: str) -> None:
         data = await (
             await self.bot.session.get(f"https://pypi.org/pypi/{package}/json")
@@ -224,7 +223,7 @@ class Utility(commands.Cog):
 
             embed.add_field(name="Project Links", value=project_urls)
 
-        await ctx.reply(
+        await ctx.send(
             embed=embed,
             view=ui.View().add_item(
                 ui.Button(style=ButtonStyle.link, label="View", url=info["project_url"])
@@ -234,9 +233,9 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         "snowflake", description="⚒ Information about a Discord id", help="<object>"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(object="Any discord ID")
     async def _snowflake(self, ctx: Context, object: discord.Object) -> None:
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 title=object.type.__name__,
                 description=f"""
@@ -251,15 +250,16 @@ class Utility(commands.Cog):
         description="⚒ View the first message in a channel",
         help="[channel]",
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(channel="Name of channel")
     async def _firstmessage(
-        self, ctx: Context, channel: Optional[discord.TextChannel] = None
+        self, ctx: Context, *, channel: Optional[discord.TextChannel] = None
     ) -> None:
         channel = channel or ctx.channel
 
         message = await channel.history(oldest_first=True, limit=1).__anext__()
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 ➤ Channel: {channel.mention}
@@ -272,7 +272,7 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         "color", description="⚒ Information about a color", help="<color>"
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(color="A color (attempts to parse RGB or HEX)")
     async def _color(self, ctx: Context, color: str):
         color = Color.parse(color)
 
@@ -286,7 +286,7 @@ class Utility(commands.Cog):
             image.save(buffer, "png")
             buffer.seek(0)
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"""
 ➤ HEX: `#{color.to_hex()}`
@@ -297,7 +297,6 @@ class Utility(commands.Cog):
         )
 
     @commands.hybrid_command("randomcolor", description="⚒ Gets a random color")
-    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _randomcolor(self, ctx: Context):
         await self._color(
             ctx,

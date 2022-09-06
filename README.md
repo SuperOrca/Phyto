@@ -19,4 +19,4 @@ If you have found a bug please [open an issue](https://github.com/SuperOrca/phyt
 possible, including relevant logs and screenshots where applicable.
 
 Have an idea for a new feature? Feel free to [open an issue](https://github.com/SuperOrca/phyto/issues/new)
-or [join us on Discord](https://discord.gg/bAnZPMerS2) to chat.
+or [join us on Discord](https://discord.gg/3p2rRDb7zS) to chat.

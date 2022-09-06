@@ -110,7 +110,7 @@ class HelpMenu(ui.View):
         await self.message.edit(view=self)
 
     async def start(self):
-        self.message = await self.ctx.reply(embed=self.embeds[0], view=self)
+        self.message = await self.ctx.send(embed=self.embeds[0], view=self)
 
     async def show_page(self, interaction: discord.Interaction, index: int):
         self.index = index

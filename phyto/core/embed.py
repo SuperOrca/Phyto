@@ -17,6 +17,7 @@ class EmbedColor(Enum):
 class Embed(discord.Embed):
     def __init__(
         self,
+        *,
         color: Union[EmbedColor, discord.Color, int] = None,
         timestamp: Optional[datetime.datetime] = None,
         fields: Iterable[Tuple[str, str]] = (),

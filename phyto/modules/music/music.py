@@ -4,7 +4,7 @@ from typing import Optional
 import discord
 import humanize
 import wavelink
-from discord import ui, ButtonStyle
+from discord import ui, ButtonStyle, app_commands
 from discord.ext import commands
 from wavelink import Track
 
@@ -57,12 +57,24 @@ class Music(commands.Cog):
     async def on_wavelink_track_end(self, player: Player, track: Track, reason: str):
         await player.next(self.players)
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState,
+    ):
+        if member == self.bot.user and after.channel is None:
+            if player := self.players.pop(member.guild.id, False):
+                await player.disconnect()
+
     @commands.hybrid_command(
         "connect", description="🎵 Connect the bot to a channel", help="[channel]"
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(channel="Name of voice channel")
     async def _connect(
-        self, ctx: Context, channel: Optional[discord.VoiceChannel] = None
+        self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None
     ) -> None:
         if ctx.guild.id in self.players:
             raise Error("Bot is already connected to a different channel.")
@@ -75,12 +87,12 @@ class Music(commands.Cog):
         player = await channel.connect(cls=Player)
         player.source_channel = ctx.channel
         self.players[ctx.guild.id] = player
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(description=f"Bot connected to {channel.mention}.")
         )
 
     @commands.hybrid_command("pause", description="🎵 Pauses the current song")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _pause(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
@@ -91,10 +103,10 @@ class Music(commands.Cog):
             raise Error("Bot is already paused.")
 
         await player.pause()
-        await ctx.reply(embed=Embed.default(description="Bot paused."))
+        await ctx.send(embed=Embed.default(description="Bot paused."))
 
     @commands.hybrid_command("resume", description="🎵 Resumes the current song")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _resume(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
@@ -105,33 +117,33 @@ class Music(commands.Cog):
             raise Error("Bot is already playing.")
 
         await player.resume()
-        await ctx.reply(embed=Embed.default(description="Bot resumed."))
+        await ctx.send(embed=Embed.default(description="Bot resumed."))
 
     @commands.hybrid_command(
         "stop",
         description="🎵 Disconnects the bot from the channel",
         aliases=["disconnect"],
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _stop(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
         await player.disconnect()
         del self.players[ctx.guild.id]
-        await ctx.reply(embed=Embed.default(description="Bot disconnected."))
+        await ctx.send(embed=Embed.default(description="Bot disconnected."))
 
     @commands.hybrid_command("skip", description="🎵 Skips the current song")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _skip(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
-        await ctx.reply(embed=Embed.default(description="Song skipped."))
+        await ctx.send(embed=Embed.default(description="Song skipped."))
         await player.next(self.players, force=True)
 
     @commands.hybrid_command(
         "queue", description="🎵 View the queue of the bot", aliases=["q"]
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _queue(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
         queue = player.queue
@@ -163,14 +175,14 @@ class Music(commands.Cog):
     @commands.hybrid_command(
         "now", description="🎵 View the queue of the bot", aliases=["np", "playing"]
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _now(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
         track = player.track
 
         duration = humanize.precisedelta(datetime.timedelta(seconds=track.duration))
 
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 title=track.title,
                 description=f"""
@@ -186,7 +198,8 @@ class Music(commands.Cog):
     @commands.hybrid_command(
         "remove", description="🎵 Remove a song from queue by index", help="<index>"
     )
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(index="Index of song in queue")
     async def _remove(self, ctx: Context, index: int) -> None:
         player = await self.get_player(ctx)
         index -= 1
@@ -194,30 +207,31 @@ class Music(commands.Cog):
         try:
             track = player.queue[index]
             del player.queue[index]
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.default(
                     description=f"Removed [`{track.title}`]({track.uri}) from the queue."
                 )
             )
         except IndexError:
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.default(description=f"Index `{index}` not found.")
             )
 
     @commands.hybrid_command("loop", description="🎵 Loops the queue of the bot")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _loop(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
         player.loop = not player.loop
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"Bot is `{'now' if player.loop else 'no longer'}` looping."
             )
         )
 
     @commands.hybrid_command("volume", description="🎵 Set the volume of the bot")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(volume="Volume of bot (1% to 1000%)")
     async def _volume(self, ctx: Context, volume: int) -> None:
         player = await self.get_player(ctx)
 
@@ -225,10 +239,11 @@ class Music(commands.Cog):
             raise Error(f"Volume `{volume}` cannot be less than 1 or greater than 100.")
 
         await player.set_volume(volume)
-        await ctx.reply(embed=Embed.default(description=f"Volume set to `{volume}%`."))
+        await ctx.send(embed=Embed.default(description=f"Volume set to `{volume}%`."))
 
     @commands.hybrid_command("seek", description="🎵 Seek to part of song in seconds")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(seconds="Number of seconds to skip to")
     async def _seek(self, ctx: Context, seconds: int) -> None:
         player = await self.get_player(ctx)
         track = player.track
@@ -237,23 +252,28 @@ class Music(commands.Cog):
             raise Error(f"Position `{seconds}` is out of range.")
 
         await player.seek(seconds * 1000)
-        await ctx.reply(embed=Embed.default(description=f"Sought to `{humanize.precisedelta(datetime.timedelta(seconds=seconds))}`."))
+        await ctx.send(
+            embed=Embed.default(
+                description=f"Sought to `{humanize.precisedelta(datetime.timedelta(seconds=seconds))}`."
+            )
+        )
 
     @commands.hybrid_command("shuffle", description="🎵 Shuffles the queue of the bot")
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def _shuffle(self, ctx: Context) -> None:
         player = await self.get_player(ctx)
 
         player.shuffle = not player.shuffle
-        await ctx.reply(
+        await ctx.send(
             embed=Embed.default(
                 description=f"Bot is `{'now' if player.shuffle else 'no longer'}` shuffling."
             )
         )
 
     @commands.hybrid_command("play", description="🎵 Plays a song")
-    @commands.cooldown(1, 2, commands.BucketType.user)
-    async def _play(self, ctx: Context, *, query: wavelink.YouTubeMusicTrack) -> None:
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @app_commands.describe(query="Name of song")
+    async def _play(self, ctx: Context, query: wavelink.YouTubeMusicTrack) -> None:
         if query.is_stream():
             raise Error("Bot cannot play streams.")
 
@@ -276,14 +296,14 @@ class Music(commands.Cog):
                 raise Error("You can only have `100` songs in queue.")
 
             player.queue.append(query)
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.default(
                     description=f"Enqueued [`{query.title}`]({query.uri})."
                 )
             )
         else:
             await player.play(query)
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.default(
                     description=f"Now playing [`{query.title}`]({query.uri})."
                 )

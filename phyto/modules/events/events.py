@@ -18,26 +18,26 @@ class Events(commands.Cog):
         self, ctx: Context, error: commands.CommandError
     ) -> None:
         if isinstance(error, Error):
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.error(description=error),
                 can_delete=True,
             )
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.error(
                     description=f"You are missing the required `{error.param.name}` argument."
                 ),
                 can_delete=True,
             )
         elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.error(
                     description=f"You are on cooldown for `{math.ceil(error.retry_after * 10) / 10}s`."
                 ),
                 can_delete=True,
             )
         else:
-            await ctx.reply(
+            await ctx.send(
                 embed=Embed.error(
                     description="An unknown error has occured. The developers have been alerted."
                 ),
