@@ -1,8 +1,8 @@
+from __future__ import annotations
+
 import logging
 from logging.handlers import RotatingFileHandler
 from typing import Any
-
-from typing_extensions import Self
 
 
 class RemoveNoise(logging.Filter):
@@ -20,7 +20,7 @@ class SetupLogging:
         self.logger = log
         self.max_bytes = 32 * 1024
 
-    def __enter__(self: Self) -> Self:
+    def __enter__(self: SetupLogging) -> SetupLogging:
         logging.getLogger("discord.client").setLevel(logging.WARNING)
         logging.getLogger("discord").setLevel(logging.WARNING)
         logging.getLogger("discord.http").setLevel(logging.WARNING)

@@ -47,7 +47,7 @@ class HelpMenu(ui.View):
 ➤ Use `{self.ctx.clean_prefix}help <command>` for more information about a command.
 ➤ For more information about the bot use `{self.ctx.clean_prefix}bot`.
 
-➤ Select a module to view the commands it contains.
+➤ Select a module to view the commands it contains.re
 """,
                 )
             ]

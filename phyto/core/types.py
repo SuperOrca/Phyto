@@ -1,4 +1,4 @@
-from typing import Set, Tuple, List, Union, TypeVar
+from typing import Set, Tuple, List, TypeVar
 
 T = TypeVar("T")
-Iterable = Union[List[T], Tuple[T], Set[T]]
+Iterable = List[T] | Tuple[T] | Set[T]

@@ -6,7 +6,7 @@ import humanize
 import wavelink
 from discord import ui, ButtonStyle, app_commands
 from discord.ext import commands
-from wavelink import Track
+from wavelink import Track, YouTubePlaylist, YouTubeMusicTrack
 
 from phyto.core.bot import Phyto
 from phyto.core.config import CONFIG
@@ -15,7 +15,7 @@ from phyto.core.embed import Embed
 from phyto.core.exceptions import Error
 from phyto.core.helpers import chunks
 from phyto.core.paginator import EmbedPaginatorMenu
-from .player import Player
+from .player import Player, search_tracks
 
 
 class Music(commands.Cog):
@@ -273,9 +273,8 @@ class Music(commands.Cog):
     @commands.hybrid_command("play", description="🎵 Plays a song")
     @commands.cooldown(1, 1, commands.BucketType.user)
     @app_commands.describe(query="Name of song")
-    async def _play(self, ctx: Context, query: wavelink.YouTubeMusicTrack) -> None:
-        if query.is_stream():
-            raise Error("Bot cannot play streams.")
+    async def _play(self, ctx: Context, query: str) -> None:
+        result = await search_tracks(query)
 
         if ctx.guild.id not in self.players:
             if not ctx.author.voice:
@@ -288,23 +287,35 @@ class Music(commands.Cog):
 
         player = await self.get_player(ctx)
 
-        if player.is_playing():
-            if query.duration > 600:
-                raise Error("Song is longer than `10 minutes`.")
+        if isinstance(result, YouTubeMusicTrack):
+            if player.is_playing():
+                player.queue.append(result)
+                await ctx.send(
+                    embed=Embed.default(
+                        description=f"Enqueued [`{result.title}`]({result.uri})."
+                    )
+                )
+            else:
+                await player.play(result)
+                await ctx.send(
+                    embed=Embed.default(
+                        description=f"Now playing [`{result.title}`]({result.uri})."
+                    )
+                )
+        elif isinstance(result, YouTubePlaylist):
+            tracks = result.tracks
+            if player.is_playing():
+                for track in tracks:
+                    player.queue.append(track)
+            else:
+                await player.play(tracks[0])
+                for track in tracks[1:]:
+                    player.queue.append(track)
 
-            if len(player.queue) > 100:
-                raise Error("You can only have `100` songs in queue.")
-
-            player.queue.append(query)
             await ctx.send(
                 embed=Embed.default(
-                    description=f"Enqueued [`{query.title}`]({query.uri})."
+                    description=f"Enqueued `{len(tracks)}` tracks from `{result.name}`."
                 )
             )
         else:
-            await player.play(query)
-            await ctx.send(
-                embed=Embed.default(
-                    description=f"Now playing [`{query.title}`]({query.uri})."
-                )
-            )
+            raise Error(f"Could not find results for `{query}`.")

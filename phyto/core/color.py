@@ -1,9 +1,6 @@
-import re
+from __future__ import annotations
 
-from typing_extensions import Self
-
-HEX_REGEX = r"^#?([a-f\d]{3,4}|[a-f\d]{6}|[a-f\d]{8})$"
-RGB_REGEX = r"^(rgb)?\(?([01]?\d\d?|2[0-4]\d|25[0-5])(\W+)([01]?\d\d?|2[0-4]\d|25[0-5])\W+(([01]?\d\d?|2[0-4]\d|25[0-5])\)?)$"
+from .constants import HEX_REGEX, RGB_REGEX
 
 
 class Color:
@@ -11,10 +8,10 @@ class Color:
         self.color = color
 
     @classmethod
-    def parse(cls: Self, color: str) -> Self:
+    def parse(cls: Color, color: str) -> Color:
         color = color.lower().strip(" ")
 
-        if re.match(HEX_REGEX, color):
+        if HEX_REGEX.match(color):
             color = color.strip("#")
 
             if len(color) == 3:
@@ -22,7 +19,7 @@ class Color:
 
             return cls((int(color[:2], 16), int(color[2:4], 16), int(color[4:6], 16)))
 
-        if match := re.match(RGB_REGEX, color):
+        if match := RGB_REGEX.match(color):
             color = match[0].split(",")
             return cls((int(color[0]), int(color[1]), int(color[2])))
 

@@ -1,7 +1,7 @@
 import logging
 import sys
 from os import listdir
-from typing import List, Union
+from typing import List
 
 import aiohttp
 import coloredlogs
@@ -83,7 +83,7 @@ class Phyto(commands.AutoShardedBot):
             f"Bot connected. DWSP latency:  {str(round((self.latency * 1000)))}ms"
         )
 
-    async def on_message(self, message: discord.Message) -> Union[None, Message]:
+    async def on_message(self, message: discord.Message) -> Message | None:
         if message.author.id in self.owner_ids and message.content.lower().startswith(
             "jsk"
         ):

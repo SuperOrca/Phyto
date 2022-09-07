@@ -3,9 +3,26 @@ from random import randrange
 
 import discord
 import wavelink
-from wavelink import Track
+from wavelink import Track, YouTubeMusicTrack, YouTubePlaylist
 
+from phyto.core.constants import YOUTUBE_REGEX
 from phyto.core.embed import Embed
+
+
+async def search_tracks(query: str) -> YouTubePlaylist | YouTubeMusicTrack | None:
+    if YOUTUBE_REGEX.match(query):
+        try:
+            tracks = await YouTubePlaylist.search(query)
+            if isinstance(tracks, YouTubePlaylist):
+                return tracks
+            return tracks[0] if tracks else None
+        except wavelink.LoadTrackError:
+            return None
+    try:
+        tracks = await YouTubeMusicTrack.search(query)
+        return tracks[0] if tracks else None
+    except wavelink.LoadTrackError:
+        return None
 
 
 class Player(wavelink.Player):
@@ -18,7 +35,9 @@ class Player(wavelink.Player):
         self.skip = False
 
     async def next(self, players: dict, force: bool = False):
-        if len(self.channel.voice_states) < 2:
+        if self.skip:
+            return
+        elif len(self.channel.voice_states) < 2:
             await self.disconnect()
             await self.source_channel.send(
                 embed=Embed.error(
@@ -48,6 +67,7 @@ class Player(wavelink.Player):
                         break
                     await asyncio.sleep(1)
         else:
+            self.skip = True
             track = self.get_track()
 
             await self.play(track)
@@ -56,6 +76,7 @@ class Player(wavelink.Player):
                     description=f"Now playing [`{track.title}`]({track.uri})."
                 )
             )
+            self.skip = False
 
     def get_track(self) -> Track:
         if not self.shuffle:
